@@ -1,0 +1,56 @@
+#[macro_use]
+extern crate tracing;
+
+use std::env;
+
+use anyhow::{Context, Result};
+use serenity::prelude::*;
+use tracing_subscriber::{filter::Directive, util::SubscriberInitExt};
+
+mod commands;
+mod handler;
+
+fn logger() -> impl SubscriberInitExt {
+    use tracing_subscriber::EnvFilter;
+
+    const CARGO_BIN_NAME: &str = env!("CARGO_BIN_NAME");
+    let default_directive: Directive = format!("{CARGO_BIN_NAME}=info")
+        .parse()
+        .expect("default directive should be valid");
+
+    let env_filter = EnvFilter::builder()
+        .with_default_directive(default_directive)
+        .from_env_lossy();
+
+    tracing_subscriber::fmt()
+        .with_env_filter(env_filter)
+        .finish()
+}
+
+async fn client() -> Result<Client> {
+    let token =
+        env::var("DISCORD_TOKEN").context("Failed to load `DISCORD_TOKEN` environment variable")?;
+    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
+
+    let client = Client::builder(token, intents)
+        .event_handler(handler::Handler)
+        .framework(commands::framework())
+        .await
+        .expect("client should build successfully");
+
+    Ok(client)
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenv::dotenv().ok();
+
+    logger()
+        .try_init()
+        .expect("logger initialization shouldn't fail");
+
+    let mut client = client().await.context("Failed to build client")?;
+    client.start().await.context("Client error occurred")?;
+
+    Ok(())
+}
