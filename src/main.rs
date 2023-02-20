@@ -10,6 +10,8 @@ use tracing_subscriber::{filter::Directive, util::SubscriberInitExt};
 mod commands;
 mod handler;
 
+pub const EMBED_COLOR: [u8; 3] = [0x58, 0x65, 0xF2]; // note: this value is mirrored in src/commands/help.rs
+
 fn logger() -> impl SubscriberInitExt {
     use tracing_subscriber::EnvFilter;
 
