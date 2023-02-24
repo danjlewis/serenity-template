@@ -16,8 +16,14 @@ fn logger() -> impl SubscriberInitExt {
     use tracing_subscriber::EnvFilter;
 
     const CARGO_BIN_NAME: &str = env!("CARGO_BIN_NAME");
-    let default_directive: Directive = format!("{CARGO_BIN_NAME}=info")
-        .parse()
+    const DEFAULT_FILTER_LEVEL: &str = if cfg!(debug_assertions) {
+        "debug"
+    } else {
+        "info"
+    };
+
+    let default_directive = format!("{CARGO_BIN_NAME}={DEFAULT_FILTER_LEVEL}")
+        .parse::<Directive>()
         .expect("default directive should be valid");
 
     let env_filter = EnvFilter::builder()
