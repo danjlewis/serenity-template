@@ -5,35 +5,13 @@ use std::env;
 
 use anyhow::{Context, Result};
 use serenity::prelude::*;
-use tracing_subscriber::{filter::Directive, util::SubscriberInitExt};
+use tracing_subscriber::util::SubscriberInitExt;
 
 mod commands;
 mod handler;
+mod log;
 
 pub const EMBED_COLOR: [u8; 3] = [0x58, 0x65, 0xF2]; // note: this value is mirrored in src/commands/help.rs
-
-fn logger() -> impl SubscriberInitExt {
-    use tracing_subscriber::EnvFilter;
-
-    const CARGO_BIN_NAME: &str = env!("CARGO_BIN_NAME");
-    const DEFAULT_FILTER_LEVEL: &str = if cfg!(debug_assertions) {
-        "debug"
-    } else {
-        "info"
-    };
-
-    let default_directive = format!("{CARGO_BIN_NAME}={DEFAULT_FILTER_LEVEL}")
-        .parse::<Directive>()
-        .expect("default directive should be valid");
-
-    let env_filter = EnvFilter::builder()
-        .with_default_directive(default_directive)
-        .from_env_lossy();
-
-    tracing_subscriber::fmt()
-        .with_env_filter(env_filter)
-        .finish()
-}
 
 async fn client() -> Result<Client> {
     let token =
@@ -53,7 +31,7 @@ async fn client() -> Result<Client> {
 async fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
-    logger()
+    log::logger()
         .try_init()
         .expect("logger initialization shouldn't fail");
 
