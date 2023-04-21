@@ -7,7 +7,6 @@ use serenity::{
     model::prelude::{Message, UserId},
     prelude::*,
 };
-use tracing::{Instrument, Level};
 
 #[help]
 #[usage_sample_label("Example(s)")]
@@ -31,15 +30,9 @@ async fn help(
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    async move {
+    instrument_command!("help", msg, {
         help_commands::with_embeds(ctx, msg, args, help_options, groups, owners).await?;
 
         Ok(())
-    }
-    .instrument(span!(
-        Level::ERROR,
-        "help",
-        author_id = u64::from(msg.author.id)
-    ))
-    .await
+    })
 }
