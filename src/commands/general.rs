@@ -1,3 +1,4 @@
+use anyhow::Context as _;
 use serenity::{
     framework::standard::{
         macros::{command, group},
@@ -16,7 +17,9 @@ struct General;
 #[num_args(0)]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
     instrument_command!("ping", msg, {
-        msg.reply(ctx, "Pong!").await.context("failed to send response message")?;
+        msg.reply(ctx, "Pong!")
+            .await
+            .context("failed to send response message")?;
 
         Ok(())
     })
@@ -31,7 +34,9 @@ async fn echo(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
         let reply_content = args.remains().unwrap_or("*(silence)*");
 
-        msg.reply(ctx, reply_content).await.context("failed to send response message")?;
+        msg.reply(ctx, reply_content)
+            .await
+            .context("failed to send response message")?;
 
         Ok(())
     })
@@ -49,7 +54,9 @@ async fn greet(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         let name = args.single::<String>().unwrap_or(String::from("world"));
         let reply_content = format!("Hello {name}!");
 
-        msg.reply(ctx, reply_content).await.context("failed to send response message")?;
+        msg.reply(ctx, reply_content)
+            .await
+            .context("failed to send response message")?;
 
         Ok(())
     })
