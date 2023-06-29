@@ -51,7 +51,7 @@ async fn greet(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     instrument_command!("greet", msg, {
         args.trimmed().quoted();
 
-        let name = args.single::<String>().unwrap_or(String::from("world"));
+        let name: String = args.single().unwrap_or(String::from("world"));
         let reply_content = format!("Hello {name}!");
 
         msg.reply(ctx, reply_content)
